@@ -1,4 +1,4 @@
-# FreeLinix Kernel
+# FreeLinX Kernel
 
 Tracks upstream Linux 6.6.21 (LTS), unmodified source.
 Upstream: https://cdn.kernel.org/pub/linux/kernel/v6.x/linux-6.6.21.tar.xz
@@ -20,5 +20,5 @@ Produces arch/x86/boot/bzImage.
 
 ## Verified
 - Builds clean with clang version 21.1.8 via LLVM=1/LLVM_IAS=1 - zero GNU binutils used.
-- Boots successfully in QEMU with a FreeLinix BusyBox initramfs to a working shell.
+- Boots successfully in QEMU with a FreeLinX BusyBox initramfs to a working shell.
 - /proc/version on the running kernel confirms the Clang toolchain used for the build.

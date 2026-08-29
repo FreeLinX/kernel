@@ -1,14 +1,14 @@
-# FreeLinix Kernel
+# FreeLinX Kernel
 
 This repository contains the kernel configuration and build documentation
-for FreeLinix, a Linux distribution built without any GNU components,
+for FreeLinX, a Linux distribution built without any GNU components,
 using the LLVM toolchain and musl libc.
 
 ## Overview
 
-FreeLinix tracks unmodified upstream Linux 6.6.21 (LTS). No kernel patches
+FreeLinX tracks unmodified upstream Linux 6.6.21 (LTS). No kernel patches
 or distro-specific source changes are applied. This repository holds the
-FreeLinix build configuration and documentation, not the kernel source
+FreeLinX build configuration and documentation, not the kernel source
 itself.
 
 - Upstream source: https://cdn.kernel.org/pub/linux/kernel/v6.x/linux-6.6.21.tar.xz
@@ -40,7 +40,7 @@ This produces arch/x86/boot/bzImage.
 ## Status
 
 The kernel builds successfully with Clang 21.1.8 and no GNU binutils.
-It has been tested in QEMU with a FreeLinix BusyBox initramfs and boots
+It has been tested in QEMU with a FreeLinX BusyBox initramfs and boots
 to a working shell. The configuration is defconfig-based and has not yet
 been trimmed or hardened for a production build.
 
