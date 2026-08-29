@@ -51,5 +51,5 @@ the stock defconfig.
 
 - toolchain — the LLVM and musl toolchain used to build this kernel
 - ports — userland packages built with the same toolchain
-- src — root filesystem assembly (in progress)
-- iso — bootable image packaging (in progress)
+- src — root filesystem assembly 
+- iso — bootable image packaging
