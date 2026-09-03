@@ -37,7 +37,7 @@ on a booted system, which reports the Clang version used for the build.
 
 This produces arch/x86/boot/bzImage.
 
-## WiFi support (real hardware)
+## WiFi support
 
 The configuration ships with loadable `802.11` WiFi driver modules (built
 with `make ARCH=x86_64 LLVM=1 modules`, installed stripped with
