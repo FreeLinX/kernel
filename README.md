@@ -80,12 +80,12 @@ The following modules are produced and installed (16 `.ko` total):
 
 Firmware lives in `src/rootfs/lib/firmware` (see `ports/firmware/linux-firmware`).
 Without it a NIC loads its driver but cannot initialize its radio. After
-booting with matching firmware, associate (see `ports/README.md` for `flx-wifi`):
+booting with matching firmware, associate (see `ports/README.md` for `flxwifi`):
 
     modprobe iwlwifi          # or ath9k / ath10k_pci / brcmfmac
-    flx-ifconfig wlan0 up
-    flx-wifi scan
-    flx-wifi connect "MyNetwork" "password"
+    flxifconfig wlan0 up
+    flxwifi scan
+    flxwifi connect "MyNetwork" "password"
     dhcpcd wlan0
 
 ## Status
@@ -106,6 +106,6 @@ the stock defconfig.
 ## Related repositories
 
 - toolchain — the LLVM and musl toolchain used to build this kernel
-- ports — userland packages (incl. `flx-wifi`/`wpa_supplicant`) built with the same toolchain
+- ports — userland packages (incl. `flxwifi`/`wpa_supplicant`) built with the same toolchain
 - src — root filesystem assembly (kernel modules + firmware installed here)
 - iso — bootable image packaging
