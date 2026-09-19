@@ -78,9 +78,13 @@ The following modules are produced and installed (16 `.ko` total):
 - `brcmutil.ko`
 - `bcma.ko`, `cordic.ko`
 
-Firmware lives in `src/rootfs/lib/firmware` (see `ports/firmware/linux-firmware`).
-Without it a NIC loads its driver but cannot initialize its radio. After
-booting with matching firmware, associate (see `ports/README.md` for `flxwifi`):
+Firmware is delivered via the `firmware/linux-firmware` port at ISO build time
+(see `ports/firmware/linux-firmware`); the 1.0 pre-release xpkg set (289
+packages) deliberately excludes the ~1.2G blob tree, so a freshly installed
+system has no `/lib/firmware` until the firmware port is staged into the
+rootfs. Without it a NIC loads its driver but cannot initialize its radio.
+After booting with matching firmware, associate (see `ports/README.md` for
+`flxwifi`):
 
     modprobe iwlwifi          # or ath9k / ath10k_pci / brcmfmac
     flxifconfig wlan0 up
