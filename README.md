@@ -52,6 +52,8 @@ Broadcom NICs:
 | `ath10k_pci`      | Qualcomm/Atheros 802.11ac PCIe (QCA6174 etc.)| `CONFIG_ATH10K_PCI=m`  |
 | `brcmfmac`        | Broadcom fullmac (cyw / wcc / bca variants)  | `CONFIG_BRCMFMAC=m`    |
 | `brcmsmac`        | Broadcom softmac                             | `CONFIG_BRCMSMAC=m`    |
+| `rtw88`           | Realtek 802.11ac (8821c/8822b/8822c PCIe+USB)| `CONFIG_RTW88=m`       |
+| `rtw89`           | Realtek 802.11ax (8852a/8852b PCIe)          | `CONFIG_RTW89=m`       |
 
 The `802.11` stack (`cfg80211` + `mac80211`) is built in, and the `device
 coredump` support newer WiFi drivers depend on is enabled:
@@ -68,7 +70,8 @@ Build and install the modules into the FreeLinX rootfs:
     make ARCH=x86_64 LLVM=1 INSTALL_MOD_STRIP=1 modules_install \
          INSTALL_MOD_PATH=../src/rootfs
 
-The following modules are produced and installed (16 `.ko` total):
+The following modules are produced and installed (33 WiFi `.ko` total,
+20 of them for Realtek 802.11ax NICs added in the rtw88/rtw89 config pass):
 
 - `iwlwifi.ko`
 - `ath9k.ko`, `ath9k_common.ko`, `ath9k_hw.ko`, `ath9k_htc.ko`
@@ -77,16 +80,28 @@ The following modules are produced and installed (16 `.ko` total):
 - `brcmsmac.ko`
 - `brcmutil.ko`
 - `bcma.ko`, `cordic.ko`
+- Realtek `rtw88`: `rtw88_core.ko`, `rtw88_pci.ko`, `rtw88_usb.ko`,
+  `rtw88_8821c.ko`, `rtw88_8821ce.ko`, `rtw88_8821cu.ko`, `rtw88_8822b.ko`,
+  `rtw88_8822be.ko`, `rtw88_8822bu.ko`, `rtw88_8822c.ko`, `rtw88_8822ce.ko`
+- Realtek `rtw89`: `rtw89_core.ko`, `rtw89_pci.ko`, `rtw89_8852a.ko`,
+  `rtw89_8852ae.ko`, `rtw89_8852b.ko`, `rtw89_8852be.ko`
+
+A few non-WiFi modules also install with the same build: `efivarfs.ko`,
+`x86_pkg_temp_thermal.ko`, the `iptable_nat`/`nf_log_syslog`/
+`xt_addrtype`/`xt_LOG`/`xt_mark`/`xt_MASQUERADE`/`xt_nat.ko` netfilter
+helpers, and the `flx_dummy.ko` reference driver.
 
 Firmware is delivered via the `firmware/linux-firmware` port at ISO build time
 (see `ports/firmware/linux-firmware`); the 1.0 pre-release xpkg set (289
 packages) deliberately excludes the ~1.2G blob tree, so a freshly installed
 system has no `/lib/firmware` until the firmware port is staged into the
 rootfs. Without it a NIC loads its driver but cannot initialize its radio.
-After booting with matching firmware, associate (see `ports/README.md` for
-`flxwifi`):
+Realtek NICs additionally need their own blobs (`rtw88/*.fw`,
+`rtw89/*.bin`) which the firmware port stages under `lib/firmware/rtw88/`
+and `lib/firmware/rtw89/`. After booting with matching firmware, associate
+(see `ports/README.md` for `flxwifi`):
 
-    modprobe iwlwifi          # or ath9k / ath10k_pci / brcmfmac
+    modprobe iwlwifi          # or ath9k / ath10k_pci / brcmfmac / rtw88_8822be
     flxifconfig wlan0 up
     flxwifi scan
     flxwifi connect "MyNetwork" "password"
