@@ -92,7 +92,7 @@ A few non-WiFi modules also install with the same build: `efivarfs.ko`,
 helpers, and the `flx_dummy.ko` reference driver.
 
 Firmware is delivered via the `firmware/linux-firmware` port at ISO build time
-(see `ports/firmware/linux-firmware`); the 1.0 pre-release xpkg set (289
+(see `ports/firmware/linux-firmware`); the 1.0 pre-release xpkg set (313
 packages) deliberately excludes the ~1.2G blob tree, so a freshly installed
 system has no `/lib/firmware` until the firmware port is staged into the
 rootfs. Without it a NIC loads its driver but cannot initialize its radio.
@@ -109,11 +109,14 @@ and `lib/firmware/rtw89/`. After booting with matching firmware, associate
 
 ## Status
 
-The kernel builds successfully with Clang 21.1.8 and no GNU binutils.
-It has been tested in QEMU with a FreeLinX initramfs and boots to a working
-root shell. The WiFi modules are verified loading as live drivers in the
-booted system (`lsmod` shows the full `ath`/`ath10k`/`brcm` dependency
-chains). Real 802.11 association must be tested on physical hardware.
+The kernel builds successfully with the FreeLinX Release Clang/LLD 22.1.8
+and no GNU binutils (LLVM=1 + LLVM_IAS=1, `ld.lld` + integrated assembler).
+The shipped `bzImage` reports `Linux version 6.6.21 (FreeLinX@FreeLinX)
+(clang version 22.1.8, LLD 22.1.8)`. It has been tested in QEMU with a
+FreeLinX initramfs and boots to a working root shell. The WiFi modules are
+verified loading as live drivers in the booted system (`lsmod` shows the
+full `ath`/`ath10k`/`brcm` dependency chains). Real 802.11 association
+must be tested on physical hardware.
 
 The configuration is defconfig-based and has not yet been trimmed or
 hardened for a production build. `MAC80211_HWSIM` is intentionally left

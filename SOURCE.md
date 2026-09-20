@@ -15,10 +15,10 @@ make LLVM=1 LLVM_IAS=1 ARCH=x86_64 CC=clang -j\$(nproc)
 Produces arch/x86/boot/bzImage.
 
 ## Deviations from stock defconfig
-- CONFIG_WERROR disabled - works around a Clang-21 vs Linux-6.6 -Wenum-enum-conversion
+- CONFIG_WERROR disabled - works around a Clang vs Linux-6.6 -Wenum-enum-conversion
   false-positive in vmstat.h.
 
 ## Verified
-- Builds clean with clang version 21.1.8 via LLVM=1/LLVM_IAS=1 - zero GNU binutils used.
+- Builds clean with clang version 22.1.8 via LLVM=1/LLVM_IAS=1 - zero GNU binutils used.
 - Boots successfully in QEMU with a FreeLinX BusyBox initramfs to a working shell.
 - /proc/version on the running kernel confirms the Clang toolchain used for the build.
