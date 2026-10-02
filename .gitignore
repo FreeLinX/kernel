@@ -5,3 +5,6 @@ linux-6.6.21.tar.xz
 build.log
 build2.log
 build3.log
+linux-*/
+linux-*.tar.xz
+sha256sums.asc
