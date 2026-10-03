@@ -6,12 +6,12 @@ using the LLVM toolchain and musl libc.
 
 ## Overview
 
-FreeLinX tracks unmodified upstream Linux 6.6.21 (LTS). No kernel patches
+FreeLinX tracks unmodified upstream Linux 6.6.157 (LTS). No kernel patches
 or distro-specific source changes are applied. This repository holds the
 FreeLinX build configuration and documentation, not the kernel source
 itself.
 
-- Upstream source: https://cdn.kernel.org/pub/linux/kernel/v6.x/linux-6.6.21.tar.xz
+- Upstream source: https://cdn.kernel.org/pub/linux/kernel/v6.x/linux-6.6.157.tar.xz
 - Working configuration: kernel.config
 - Build notes: SOURCE.md
 
@@ -27,9 +27,9 @@ on a booted system, which reports the Clang version used for the build.
 
     export PATH=~/freelinix/toolchain/bin:$PATH
 
-    wget https://cdn.kernel.org/pub/linux/kernel/v6.x/linux-6.6.21.tar.xz
-    tar xf linux-6.6.21.tar.xz
-    cd linux-6.6.21
+    wget https://cdn.kernel.org/pub/linux/kernel/v6.x/linux-6.6.157.tar.xz
+    tar xf linux-6.6.157.tar.xz
+    cd linux-6.6.157
     cp ../kernel.config .config
 
     make LLVM=1 LLVM_IAS=1 ARCH=x86_64 CC=clang olddefconfig
@@ -111,7 +111,7 @@ and `lib/firmware/rtw89/`. After booting with matching firmware, associate
 
 The kernel builds successfully with the FreeLinX Release Clang/LLD 22.1.8
 and no GNU binutils (LLVM=1 + LLVM_IAS=1, `ld.lld` + integrated assembler).
-The shipped `bzImage` reports `Linux version 6.6.21 (FreeLinX@FreeLinX)
+The shipped `bzImage` reports `Linux version 6.6.157 (FreeLinX@FreeLinX)
 (clang version 22.1.8, LLD 22.1.8)`. It has been tested in QEMU with a
 FreeLinX initramfs and boots to a working root shell. The WiFi modules are
 verified loading as live drivers in the booted system (`lsmod` shows the
