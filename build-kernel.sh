@@ -5,22 +5,29 @@
 # build-kernel.sh - rebuild bzImage from upstream source with the LLVM toolchain.
 #
 # SOURCE.md documents the two make invocations.  This script is those two, plus
-# the part that is easy to get wrong by hand: the config in this repository is
-# not the config the shipped kernel was built from, so a plain rebuild silently
-# produces a different kernel.
+# an assertion.
 #
-# The differences are in the graphics console, and they are the whole reason this
-# script exists.  kernel.config has:
+# kernel.config used to disagree with the kernel that was shipped: it had
 #
 #     # CONFIG_FB is not set
 #     # CONFIG_DRM_SIMPLEDRM is not set
 #     # CONFIG_DRM_BOCHS is not set
 #
-# so there is no fbcon and no KMS driver for the virtual adapters QEMU hands out,
-# and the only console driver left is vgacon - the legacy VGA text one.  That is
-# enough on a BIOS boot, provided the bootloader hands over a text screen rather
-# than a framebuffer.  It is not enough on a UEFI boot at all: Limine reports
-# VIDEO_TYPE_EFI there unconditionally, and vgacon's first act is to refuse it.
+# while bzImage had been built from something else, so a plain rebuild silently
+# produced a different kernel from the one in the repository.  That state is
+# gone.  bzImage and kernel.config are now the same build, and
+#
+#     make olddefconfig            # from kernel.config, nothing else
+#
+# reproduces .config exactly.  kernel.config is the generated .config of the
+# build below, not a hand-written approximation of it.
+#
+# Why that state existed, and why these symbols are the ones to insist on: with
+# no framebuffer console the only console driver left is vgacon, the legacy VGA
+# text one.  That is enough on a BIOS boot, provided the bootloader hands over a
+# text screen rather than a framebuffer.  It is not enough on a UEFI boot at all:
+# Limine reports VIDEO_TYPE_EFI there unconditionally, and vgacon's first act is
+# to refuse it.
 #
 #     drivers/video/console/vgacon.c:155
 #         if (screen_info.orig_video_isVGA == VIDEO_TYPE_VLFB ||
@@ -31,11 +38,14 @@
 # With no fbcon behind it that leaves the dummy console, which draws nothing, so
 # a UEFI machine with no serial cable shows the firmware and then a black screen.
 #
-# So this script enables the framebuffer console and the driver that provides a
-# framebuffer for the QEMU adapters.  With fbcon present the console does not
-# depend on how the bootloader set up video at all: it takes the framebuffer the
-# DRM driver registers and draws into that, on BIOS and UEFI alike, and vgacon
-# stays as the fallback for a machine with a real VGA card and no other driver.
+# With fbcon present the console does not depend on how the bootloader set up
+# video at all: it takes the framebuffer the DRM driver registers and draws into
+# that, on BIOS and UEFI alike, and vgacon stays as the fallback for a machine
+# with a real VGA card and no other driver.  The symbols enabled below are that
+# configuration.  They are already in kernel.config, so each enable() is a no-op
+# that re-asserts; they are kept because a config edited from here is exactly
+# how the disagreement came about, and a kernel with no framebuffer console in it
+# boots to a black screen rather than complaining.
 #
 # Usage:  sh build-kernel.sh [TREE]      TREE defaults to /tmp/opencode/linux-6.6.21
 #
@@ -51,11 +61,21 @@ HERE=$(cd "$(dirname "$0")" && pwd)
 command -v clang >/dev/null || die 'clang is not on PATH'
 
 # olddefconfig is used rather than a hand-written .config because the values here
-# have to agree with what this exact kernel version offers: a config naming a
-# symbol that does not exist in 6.6 is dropped silently, and this kernel.config
-# already carries one, CONFIG_VT_HW_CONSOLE_BINDING, which is a 6.9 symbol.  It
-# reads as though it says something about the VT console and says nothing at all.
-# 6.6 spells that decision CONFIG_VGA_CONSOLE, which is already =y.
+# have to agree with what this exact kernel version offers, and a config naming a
+# symbol that does not exist is dropped silently.
+#
+# One such line has already been nearly lost.  An earlier revision of
+# kernel.config carried
+#
+#     # CONFIG_VT_HW_CONSOLE_BINDING is not set
+#
+# with a note saying it was a 6.9 symbol that meant nothing in 6.6.  It is real
+# in 6.6, at drivers/tty/Kconfig:83, `def_bool y` on HW_CONSOLE, and it is =y in
+# the config now.  It decides something: it is what lets the VT bind a console
+# driver when more than one is available, which is this kernel exactly, with both
+# fbcon and vgacon built in.  A comment calling it meaningless is a licence to
+# delete it, so it stays.
+#
 # enable SYMBOL - turn one symbol on and insist that it is on afterwards.
 #
 # scripts/config, not a written .config: this file is appended to, not replaced,
@@ -100,16 +120,37 @@ enable CONFIG_FRAMEBUFFER_CONSOLE_DETECT_PRIMARY
 enable CONFIG_DRM_SIMPLEDRM
 enable CONFIG_DRM_BOCHS
 
-# Without this a DRM card registers a /dev/dri node but no /dev/fbN, so Xorg's
-# fbdev driver has nothing to open and the desktop service waits forever for a
-# display that the kernel is holding back.
+# A link-time requirement for the two drivers above, not a nicety.  Both call
+# drm_fbdev_generic_setup(), and the function lives in drm_fbdev_generic.o,
+# which is built only when this is on:
+#
+#     drivers/gpu/drm/Makefile
+#         drm_kms_helper-$(CONFIG_DRM_FBDEV_EMULATION) += \
+#                 drm_fbdev_generic.o \
+#                 drm_fb_helper.o
+#
+# It is also what registers /dev/fb0, which is the framebuffer fbcon binds to,
+# so without it there is no console to draw on even with FB and fbcon set.
 enable CONFIG_DRM_FBDEV_EMULATION
+
+# The other half of simpledrm on x86, and the kernel says so itself:
+#
+#     drivers/gpu/drm/tiny/Kconfig, config DRM_SIMPLEDRM
+#       On x86 BIOS or UEFI systems, you should also select SYSFB_SIMPLEFB
+#       to use UEFI and VESA framebuffers.
+#
+# simpledrm binds a platform device, and on x86 the one that carries the
+# firmware's framebuffer is simplefb's.  Without it, a Limine boot that hands
+# over a linear framebuffer on a machine with no PCI display adapter has a
+# driver for it nowhere and no console.  Harmless where there is such an
+# adapter: there is no simple-framebuffer device to claim.
+enable CONFIG_SYSFB_SIMPLEFB
 
 # vgacon stays on.  It is still the right driver for a machine with a real VGA
 # card and no KMS driver, and with fbcon also present the two coexist: fbcon takes
 # over when a framebuffer is registered and vgacon has the text console otherwise.
 printf '\n== the console drivers this kernel will have ==\n'
-grep -E '^CONFIG_(FB|FB_CORE|FRAMEBUFFER_CONSOLE|FB_VESA|DRM_SIMPLEDRM|DRM_BOCHS|DRM_FBDEV_EMULATION|VGA_CONSOLE|VT_HW_CONSOLE_BINDING)=' \
+grep -E '^CONFIG_(FB|FB_CORE|FRAMEBUFFER_CONSOLE|FB_VESA|DRM_SIMPLEDRM|DRM_BOCHS|DRM_FBDEV_EMULATION|SYSFB_SIMPLEFB|VGA_CONSOLE|VT_HW_CONSOLE_BINDING)=' \
 	"$TREE/.config" || true
 
 printf '\n== building ==\n'
